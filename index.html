@@ -38,6 +38,106 @@
     width: 100%;
     max-width: 880px;
   }
+  .cover {
+    margin-bottom: 22px;
+    opacity: 1;
+    transition: opacity 320ms ease;
+  }
+  .cover.leaving {
+    opacity: 0;
+  }
+  .cover-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #cfc4a3;
+    box-shadow:
+      0 1px 0 #fff inset,
+      0 18px 40px rgba(60, 45, 20, 0.32),
+      0 2px 0 var(--page-edge);
+  }
+  .cover-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .cover-missing {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 20px;
+    background: repeating-linear-gradient(45deg, #cfc4a3, #cfc4a3 10px, #c6ba97 10px, #c6ba97 20px);
+  }
+  .cover.broken .cover-missing { display: flex; }
+  .cover.broken .cover-img { display: none; }
+  .cover-veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(20, 14, 6, 0.82) 0%, rgba(20, 14, 6, 0.35) 42%, rgba(20, 14, 6, 0.05) 68%);
+  }
+  .cover-content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 40px 32px 36px;
+    text-align: center;
+  }
+  .cover-content h1 {
+    margin: 0 0 8px;
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    font-size: 2.3rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: #f3ead6;
+    font-variant: small-caps;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+  .cover-content p {
+    margin: 0 0 26px;
+    color: #e7dcc1;
+    font-size: 0.95rem;
+    font-style: italic;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  }
+  button.cover-start {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    font-variant: small-caps;
+    background: var(--accent-deep);
+    color: var(--page);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 3px;
+    padding: 14px 40px;
+    min-height: 48px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    transition: background 150ms ease, transform 150ms ease;
+  }
+  button.cover-start:hover, button.cover-start:focus-visible {
+    background: #6a4a2c;
+    transform: translateY(-1px);
+    outline: none;
+  }
+  button.cover-start:active {
+    transform: translateY(0);
+  }
+  @media (max-width: 720px) {
+    .cover-frame { aspect-ratio: 3 / 4; }
+    .cover-content h1 { font-size: 1.7rem; }
+  }
   header.top {
     text-align: center;
     margin-bottom: 22px;
@@ -248,11 +348,23 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
+  <div class="cover" id="cover">
+    <div class="cover-frame">
+      <img class="cover-img" id="coverImg" alt="" loading="eager" referrerpolicy="no-referrer">
+      <div class="cover-missing">Ilustrasi kulit tidak dapat dimuatkan.<br>Sila semak sambungan internet anda.</div>
+      <div class="cover-veil"></div>
+      <div class="cover-content">
+        <h1>Jejak Orang Utan</h1>
+        <p>Sebuah kisah bercabang</p>
+        <button type="button" class="cover-start" id="coverStart">Mulakan</button>
+      </div>
+    </div>
+  </div>
+  <header class="top" id="topHeader" hidden>
     <h1>Jejak Orang Utan</h1>
     <p>Sebuah kisah bercabang</p>
   </header>
-  <div class="book" id="book">
+  <div class="book" id="book" hidden>
     <div class="plate" id="plate">
       <img id="plateImg" alt="" loading="lazy" referrerpolicy="no-referrer">
       <div class="plate-missing">Ilustrasi tidak dapat dimuatkan.<br>Sila semak sambungan internet anda.</div>
@@ -262,7 +374,7 @@
       <div class="choices" id="choices"></div>
     </div>
   </div>
-  <footer class="note">Cerita ini fiksyen. Watak dan syarikat yang disebut adalah rekaan semata-mata. Ilustrasi dijana oleh AI melalui OpenArt dan dimuatkan terus dari pelayan OpenArt &mdash; sambungan internet diperlukan untuk memaparkannya.</footer>
+  <footer class="note" id="bottomNote" hidden>Cerita ini fiksyen. Watak dan syarikat yang disebut adalah rekaan semata-mata. Ilustrasi dijana oleh AI melalui OpenArt dan dimuatkan terus dari pelayan OpenArt &mdash; sambungan internet diperlukan untuk memaparkannya.</footer>
 </div>
 
 <script>
@@ -677,6 +789,29 @@
   var textEl = document.getElementById("storyText");
   var choicesEl = document.getElementById("choices");
 
+  var coverEl = document.getElementById("cover");
+  var coverImgEl = document.getElementById("coverImg");
+  var coverStartBtn = document.getElementById("coverStart");
+  var topHeaderEl = document.getElementById("topHeader");
+  var bottomNoteEl = document.getElementById("bottomNote");
+
+  var COVER_IMAGE_URL = "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789378995140_c08337c8.png";
+
+  coverImgEl.onerror = function () { coverEl.classList.add("broken"); };
+  coverImgEl.src = COVER_IMAGE_URL;
+  coverImgEl.alt = "Jejak Orang Utan";
+
+  coverStartBtn.addEventListener("click", function () {
+    coverEl.classList.add("leaving");
+    window.setTimeout(function () {
+      coverEl.hidden = true;
+      topHeaderEl.hidden = false;
+      bookEl.hidden = false;
+      bottomNoteEl.hidden = false;
+      render();
+    }, 300);
+  });
+
   function resetState() {
     state = { kepercayaan: 0, bukti: 0, bahaya: 0 };
     currentId = story.start;
@@ -763,8 +898,6 @@
       });
     }, 120);
   }
-
-  render();
 })();
 </script>
 </body>
