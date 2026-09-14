@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jejak Orang Utan</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f3ead6;
+    --page-edge: #e7dcc1;
+    --ink: #2c241a;
+    --ink-soft: #5a5138;
+    --rule: #cbbd97;
+    --accent: #7a5230;
+    --accent-deep: #4f3520;
+    --danger: #8c3b2b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #ded2ae;
+  }
+  body {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    color: var(--ink);
+    line-height: 1.7;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 28px 14px 56px;
+    background-image:
+      radial-gradient(ellipse at top, rgba(255,255,255,0.25), transparent 60%),
+      linear-gradient(#ded2ae, #d5c79c);
+  }
+  .wrap {
+    width: 100%;
+    max-width: 660px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  header.top h1 {
+    font-size: 1.9rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--accent-deep);
+    margin: 0 0 6px;
+    font-variant: small-caps;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+  .book {
+    background: var(--page);
+    border: 1px solid var(--page-edge);
+    border-radius: 4px;
+    box-shadow:
+      0 1px 0 #fff inset,
+      0 18px 40px rgba(60, 45, 20, 0.28),
+      0 2px 0 var(--page-edge);
+    padding: 0 0 30px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 260ms ease, transform 260ms ease;
+    overflow: hidden;
+  }
+  .book.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .plate {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #cfc4a3;
+    overflow: hidden;
+    border-bottom: 1px solid var(--page-edge);
+  }
+  .plate img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .plate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 40px rgba(30, 20, 5, 0.25);
+    pointer-events: none;
+  }
+  .plate-missing {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 20px;
+    background: repeating-linear-gradient(45deg, #cfc4a3, #cfc4a3 10px, #c6ba97 10px, #c6ba97 20px);
+  }
+  .plate.broken .plate-missing { display: flex; }
+  .plate.broken img { display: none; }
+  .page-body {
+    padding: 28px 32px 6px;
+  }
+  .scene-tag {
+    display: block;
+    text-align: center;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+  }
+  .scene-tag::before, .scene-tag::after {
+    content: "\2766";
+    margin: 0 10px;
+    color: var(--rule);
+  }
+  .ending-label {
+    display: block;
+    text-align: center;
+    margin-bottom: 18px;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    font-variant: small-caps;
+  }
+  .ending-label.bad {
+    color: var(--danger);
+  }
+  .story-text {
+    font-size: 1.12rem;
+    max-width: 62ch;
+    margin: 0 auto;
+  }
+  .story-text p {
+    margin: 0 0 1.1em;
+    text-align: justify;
+    hyphens: auto;
+  }
+  .story-text p:first-of-type::first-letter {
+    font-size: 2.6em;
+    float: left;
+    line-height: 0.85;
+    padding: 4px 8px 0 0;
+    color: var(--accent-deep);
+    font-family: Georgia, serif;
+  }
+  .story-text p:last-child {
+    margin-bottom: 0;
+  }
+  .choices {
+    margin: 28px auto 0;
+    max-width: 62ch;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 32px;
+  }
+  button.choice {
+    font-family: inherit;
+    font-size: 1rem;
+    text-align: left;
+    background: #ebe1c8;
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 14px 18px;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  button.choice::before {
+    content: "\2014 ";
+    color: var(--accent);
+  }
+  button.choice:hover, button.choice:focus-visible {
+    background: #e2d5ae;
+    border-color: var(--accent);
+    outline: none;
+  }
+  button.choice:active {
+    background: #d8c896;
+  }
+  button.restart {
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: var(--accent-deep);
+    color: var(--page);
+    border: 1px solid var(--accent-deep);
+    border-radius: 3px;
+    padding: 12px 18px;
+    min-height: 44px;
+    cursor: pointer;
+    margin-top: 6px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  button.restart:hover {
+    background: #3d2a19;
+  }
+  footer.note {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-top: 20px;
+    padding: 0 16px;
+  }
+  @media (max-width: 480px) {
+    .page-body { padding: 22px 20px 4px; }
+    .choices { padding: 0 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .book { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Jejak Orang Utan</h1>
+    <p>Sebuah kisah bercabang</p>
+  </header>
+  <div class="book" id="book">
+    <div class="plate" id="plate">
+      <img id="plateImg" alt="" loading="lazy" referrerpolicy="no-referrer">
+      <div class="plate-missing">Ilustrasi tidak dapat dimuatkan.<br>Sila semak sambungan internet anda.</div>
+    </div>
+    <div class="page-body">
+      <div class="story-text" id="storyText"></div>
+      <div class="choices" id="choices"></div>
+    </div>
+  </div>
+  <footer class="note">Cerita ini fiksyen. Watak dan syarikat yang disebut adalah rekaan semata-mata. Ilustrasi dijana oleh AI melalui OpenArt dan dimuatkan terus dari pelayan OpenArt &mdash; sambungan internet diperlukan untuk memaparkannya.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // STORY DATA
+  // ---------------------------------------------------------------
+  var story = {
+    start: "p1",
+    nodes: {
+
+      p1: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362789983_0729b3ae.png",
+        tag: "Pengenalan",
+        text: [
+          "Samad, dua puluh dua tahun, anak sulung Pak Utih dan Mak Salmah, lahir dan membesar di Kampung Sungai Rasa. Kampung ni kecil sahaja, lebih kurang lapan puluh buah rumah berselerak di sepanjang tebing Sungai Segama, kira-kira dua jam perjalanan darat dari pekan Lahad Datu kalau jalan tak berlopak teruk. Di sebelah utara kampung, sungai itu meliuk masuk ke kawasan hijau gelap yang orang kampung panggil je ‘rimba belakang’, sebenarnya sempadan Hutan Simpan Ulu Segama, salah satu daripada baki terakhir hutan hujan tanah pamah di Sabah yang masih menyimpan populasi orang utan liar.",
+          "Kampung Sungai Rasa tak besar mana pun namanya disebut dalam peta rasmi, tapi bagi orang yang tinggal di situ, ia dunia yang lengkap. Ada sekolah rendah, surau kecil bercat hijau, dan sebuah kedai runcit merangkap kedai kopi yang jadi pusat sembang pagi dan petang. Kanak-kanak mandi sungai lepas sekolah, orang tua duduk berbual di kaki lima kedai sambil kunyah sireh, dan bunyi ayam berkokok bersaing dengan bunyi radio dari rumah ke rumah setiap subuh.",
+          "Samad membesar mendengar cerita datuknya, Pak Milan, tentang zaman sebelum kampung ni ada jalan tar, waktu orang utan turun sampai ke pinggir kebun dan kanak-kanak dihalau masuk rumah bila ‘mat rombeng hutan’ itu lalu, gelaran manja penduduk kampung untuk orang utan yang mereka anggap jiran lama, bukan haiwan asing."
+        ].join("\n\n"),
+        choices: [
+          { label: "Teruskan", to: "p2" }
+        ]
+      },
+
+      p2: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362794826_f7158fb1.png",
+        tag: "Pengenalan",
+        text: [
+          "Sejak kecil, Samad memang lain sikit berbanding budak-budak sebaya. Waktu orang lain main bola atau kejar-kejar tepi sungai, Samad lebih suka ikut Pak Milan, datuknya, masuk hutan cari rotan atau tengok sarang burung. Pak Milan yang ajar dia kenal jejak binatang, bunyi burung yang tandakan hujan akan turun, dan cara baca alam yang tak diajar di sekolah.",
+          "Bila Pak Milan meninggal tiga tahun lepas, Samad teruskan tabiat tu sendirian, kadang-kadang membantu Pak Rashid, penjaga hutan PERHILITAN yang berpangkalan di hujung kampung, sebagai buruh separuh masa mengangkut alat semasa kerja pemantauan. Bukan kerja tetap, tapi cukup untuk Samad rasa dia ada peranan menjaga hutan yang datuknya sayang sepenuh hati.",
+          "Ayahnya, Pak Utih, seorang penoreh getah yang juga kadang-kadang ambil kerja harian di kem balak Syarikat Perkasa Timber bila musim getah tak berapa elok. Separuh kampung sebenarnya bergantung pada syarikat balak tu untuk pendapatan sampingan, jadi walaupun ramai penduduk risau lihat pokok ditebang semakin dekat dengan sempadan hutan simpan, tak ramai yang berani bersuara. Perut keluarga lagi penting daripada bimbang pasal orang utan yang mereka sendiri tak selalu nampak lagi sejak kebelakangan ini."
+        ].join("\n\n"),
+        choices: [
+          { label: "Teruskan", to: "p3" }
+        ]
+      },
+
+      p3: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362795987_d2823713.png",
+        tag: "Pengenalan",
+        text: [
+          "Malam-malam di Kampung Sungai Rasa biasanya sunyi lepas pukul sepuluh. Lampu rumah satu-satu terpadam, anjing kampung berhenti menyalak, dan yang kedengaran cuma bunyi cengkerik dan desiran air sungai di kejauhan. Itu rentak yang Samad kenal sepanjang hidupnya, rentak yang buat dia rasa selamat walaupun rumahnya cuma serenggang kayu dari pinggir hutan.",
+          "Malam ini, macam malam-malam biasa, Samad duduk di beranda rumah papan keluarganya, minum kopi O yang dah sejuk separuh sambil dengar Mak Salmah dan Pak Utih berbual perlahan di dalam pasal harga getah yang tak berapa naik akhir-akhir ni. Bintang jarang kelihatan sebab langit berkabus tebal, tanda hujan mungkin turun lewat malam.",
+          "Tapi sesuatu pecahkan rentak sunyi biasa itu. Bunyi enjin diesel berat, lori balak, lalu di jalan tanah merah hujung kampung. Samad angkat kepala. Pukul begini? Biasanya lori Syarikat Perkasa Timber berhenti kerja waktu maghrib, bukan lepas pukul sebelas malam begini."
+        ].join("\n\n"),
+        choices: [
+          { label: "Teruskan", to: "n1" }
+        ]
+      },
+
+      n1: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362799069_f0bd3b6b.png",
+        tag: "Malam yang ganjil",
+        text: [
+          "Dia kenal bunyi hutan tu macam kenal muka sendiri, kerana pengetahuan yang diwarisi daripada Pak Milan tak pernah pudar biar pun datuknya dah tiada. Kalau ada lori bergerak waktu begini, mesti ada sebab yang orang tak nak orang lain nampak.",
+          "Pak Rashid mesti tahu sesuatu. Tapi kalau Samad tunggu sampai esok pagi baru cerita, apa-apa yang berlaku malam ni dah selesai dan bukti pun dah hilang.",
+          "Samad letak cawan kopi, ambil kasut getah yang tersadai di tepi tangga, dan buat keputusan."
+        ].join("\n\n"),
+        choices: [
+          { label: "Ikut jejak lori itu diam-diam", to: "n2" },
+          { label: "Pergi ke pos Pak Rashid dulu", to: "n3" }
+        ]
+      },
+
+      n2: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362808003_1be28f8b.png",
+        tag: "Mengekori",
+        text: [
+          "Samad ikut denyut lampu belakang lori dari jauh, berjalan kaki melalui laluan pembalak lama yang dia kenal sejak kecil. Bulan tak berapa terang, jadi dia kena berpandukan bunyi enjin dan cahaya lampu suluh yang ditutup separuh dengan tapak tangan.",
+          "Sejam berjalan, kakinya mula lenguh dan nyamuk hutan pula tak bagi peluang rehat. Beberapa kali dia terpaksa berhenti, tunduk di sebalik rumpun buluh, sebab nampak lampu suluh lain bergerak di kejauhan, mungkin pengawal kem. Jantungnya berdegup lebih laju setiap kali cahaya itu berhenti seketika macam sedang mengintai balik.",
+          "Akhirnya laluan itu membuka ke satu kawasan lapang. Dia nampak pagar zink tinggi mengelilingi satu petak tanah, dengan lampu neon terang di tengah-tengah kem yang sepatutnya sunyi waktu begini. Ini bukan kem balak biasa yang dia kenal sejak kecil. Ada sesuatu yang lain di sini."
+        ].join("\n\n"),
+        effect: function (s) { s.bahaya += 1; },
+        choices: [
+          { label: "Teruskan", to: "n4" }
+        ]
+      },
+
+      n3: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362807325_0d678294.png",
+        tag: "Pos Pak Rashid",
+        text: [
+          "Pos kecil Pak Rashid, tempat Samad selalu singgah tolong angkut alat sejak beberapa bulan lepas, masih bernyala lampu walaupun dah lewat. Samad ketuk pintu, dan Pak Rashid buka dengan muka risau, macam dah tak boleh tidur beberapa malam ni.",
+          "“Awak dengar lori tu jugak ke?” dia tanya sambil renung ke arah bukit. “Dah tiga malam berturut-turut. Saya dah mula rasa Perkasa Timber ni bukan sekadar tebang kayu je.”",
+          "Dia cerita, kelulusan pembalakan Encik Razif sepatutnya terhad kepada zon penyangga, bukan masuk dalam hutan simpan. Tapi laporan penderaan habitat yang dia hantar ke ibu pejabat tak pernah dibalas. Lagi pelik, seminggu lepas dia nampak sangkar besi dimuatkan ke dalam lori kosong sebelum subuh, sesuatu yang tak pernah wujud dalam operasi balak biasa.",
+          "“Kalau betul apa yang saya syak,” kata Pak Rashid perlahan, “ini bukan setakat balak haram. Ini penyeludupan hidupan liar.”",
+          "Dia pandang Samad tajam. “Awak nak sertai saya siasat, atau biar saya uruskan sendiri dulu?”"
+        ].join("\n\n"),
+        effect: function (s) { s.kepercayaan += 1; },
+        choices: [
+          { label: "Setuju siasat bersama Pak Rashid", to: "n5" },
+          { label: "Kata Samad nak siasat sendiri dulu", to: "n6" }
+        ]
+      },
+
+      n6: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362816791_0635a92d.png",
+        tag: "Disyaki",
+        text: [
+          "Samad rasa lagi selamat kalau bergerak sorang-sorang dulu, tanpa tarik Pak Rashid terus dalam bahaya kalau syak dia salah. Dia pusing ke arah kem, cuba dekati beberapa pekerja yang selalu singgah kedai kopi kampung waktu rehat.",
+          "Salah seorang, muda dan nampak resah, hampir nak cerita sesuatu bila Samad tanya pasal bunyi lori lewat malam. Tapi sebelum sempat habis cakap, Encik Damsuki, penyelia kem, muncul dari belakang lori dan berdiri betul-betul di depannya.",
+          "“Awak ni asal kampung mana?” dia tanya, suara tenang tapi mata dia mengukur Samad dari hujung kepala sampai hujung kaki. “Kem ni bukan tempat orang luar sepatutnya menyibuk.”",
+          "Dia tak buat apa-apa lagi selain memerhati sampai Samad beredar, tapi mesejnya jelas. Malam itu juga, Samad dengar dari jiran yang Tok Ketua Hassan dapat panggilan telefon tentang “orang kampung yang suka mengintai kem orang”. Samad dah mula disyaki, dan dia belum pun jumpa bukti apa-apa."
+        ].join("\n\n"),
+        effect: function (s) { s.bahaya += 1; s.kepercayaan -= 1; },
+        choices: [
+          { label: "Teruskan", to: "n9" }
+        ]
+      },
+
+      n4: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362813331_751ddcc4.png",
+        tag: "Di luar kem",
+        text: [
+          "Dari sebalik pokok, Samad nampak dengan jelas. Beberapa lori diletak berbaris, dan di tengah kawasan berpagar itu ada satu bangunan kayu rendah dengan bunyi raungan haiwan yang datang dari dalam, bukan bunyi lembu atau khinzir ternak, tapi sesuatu yang lebih liar dan lebih menyayat hati untuk didengar waktu malam sunyi begini.",
+          "Dua lelaki berdiri berhampiran bangunan itu, bercakap perlahan sambil menghisap rokok. Dia tak dapat dengar jelas kata-kata mereka dari jarak sejauh ini.",
+          "Samad kena buat keputusan. Menyelinap lebih dekat untuk dengar dan lihat dengan jelas, dengan risiko ditangkap kalau mereka perasan. Atau berundur sekarang, catat kedudukan dan apa yang dah nampak, lalu fikir langkah seterusnya dengan lebih selamat esok."
+        ].join("\n\n"),
+        choices: [
+          { label: "Menyelinap lebih dekat", to: "n7" },
+          { label: "Berundur, catat kedudukan", to: "n5" }
+        ]
+      },
+
+      n5: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362818393_ad3520d3.png",
+        tag: "Berundur",
+        text: [
+          "Samad putuskan berundur dulu. Dari jarak yang selamat, dia catat dalam kepala apa yang dah nampak, kedudukan pagar, bilangan lori, dan bunyi raungan haiwan yang masih terngiang-ngiang di telinga sampai dia balik ke rumah.",
+          "Esok paginya, Samad cuba fikir siapa yang boleh dipercayai untuk kongsi maklumat ni. Kampung kecil macam Sungai Rasa, cerita cepat tersebar dan bukan semua orang nak berdepan dengan Perkasa Timber, syarikat yang bagi banyak penduduk kerja sebagai buruh dan pemandu.",
+          "Ada dua nama yang terlintas di fikirannya. Farid, sepupunya, yang memandu lori di kem tu sendiri dan mungkin tahu lebih banyak dari sesiapa. Atau balik dulu, duduk diam, dan fikir dengan lebih tenang sebelum bertindak apa-apa yang boleh menjejaskan diri sendiri atau keluarga."
+        ].join("\n\n"),
+        effect: function (s) { s.bukti += 1; },
+        choices: [
+          { label: "Cari Farid, sepupu yang bekerja di kem", to: "n8" },
+          { label: "Balik dulu, fikir dengan tenang", to: "n9" }
+        ]
+      },
+
+      n7: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362821749_939c701b.png",
+        tag: "Sangkar besi",
+        text: [
+          "Samad menyelinap lebih dekat, langkah demi langkah, badan rapat ke tanah lembap. Dari celah papan bangunan kayu itu, dia nampak sesuatu yang buat darahnya jadi sejuk. Sebuah sangkar besi, dan di dalamnya, seekor anak orang utan meraung, mencengkam jeriji dengan kedua-dua tangan kecilnya, mata terbeliak ketakutan.",
+          "“Esok malam kita hantar,” salah seorang lelaki itu berkata perlahan kepada rakannya. “Bos dah sediakan penghantaran ke pelabuhan. Jangan buat bising, faham?”",
+          "Samad tercegat, cuba rakam apa yang mungkin dalam ingatan sebab tak sempat keluarkan telefon. Tapi seekor anjing kem tiba-tiba menyalak kuat ke arah pokok tempat dia bersembunyi.",
+          "“Ada apa tu?” salah seorang lelaki bersuara tajam.",
+          "Samad tak tunggu lagi. Dia lari, memotong denai gelap, jantung berdegup sekuat hentakan kaki, sampai nafasnya tercungap-cungap di pintu rumah sendiri. Dia dah nampak apa yang berlaku. Sekarang, apa yang dia buat dengan maklumat ni akan tentukan segalanya."
+        ].join("\n\n"),
+        effect: function (s) { s.bukti += 1; s.bahaya += 1; },
+        choices: [
+          { label: "Teruskan", to: "n9" }
+        ]
+      },
+
+      n8: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362823655_a71d2bbf.png",
+        tag: "Farid",
+        text: [
+          "Samad cari Farid petang esoknya, di tepi sungai tempat Farid selalu basuh motosikal lepas balik kerja. Muka Farid lesu, dan bila Samad sebut pasal lori dan sangkar, tangannya berhenti seketika sebelum sambung menggosok tayar.",
+          "“Saya dah agak awak nampak sesuatu,” dia kata perlahan, tak pandang mata Samad. “Saya cuma pemandu, tapi saya tahu ada barang lain selain balak dalam beberapa penghantaran akhir-akhir ni. Saya tak suka, tapi kerja ni yang bagi makan anak bini saya.”",
+          "Farid tawar bantu, tapi Samad perlu putuskan berapa banyak nak percayakan dia. Farid darah daging Samad sendiri, tapi dia juga bekerja untuk orang yang mungkin terlibat dalam penyeludupan ni, dan kesetiaan boleh jadi rumit bila periuk nasi keluarga jadi taruhan."
+        ].join("\n\n"),
+        choices: [
+          { label: "Percayai Farid sepenuhnya, kongsi semua rancangan", to: "n10", effect: function (s) { s.kepercayaan += 1; s.bahaya += 1; } },
+          { label: "Kongsi separuh maklumat sahaja, berjaga-jaga", to: "n10" }
+        ]
+      },
+
+      n10: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362831872_6d8c8402.png",
+        tag: "Sekutu",
+        text: [
+          "Farid angguk, wajahnya bercampur antara lega dan bimbang. “Saya akan cuba dengar-dengar dalam kem,” dia janji. “Tapi kalau saya nampak apa-apa yang boleh bahayakan awak, saya nak awak berhenti dulu, faham?”",
+          "Dia benarkan Samad guna namanya kalau perlu berurusan dengan pekerja lain, satu langkah kecil tapi bermakna dalam kampung yang serba mengenali antara satu sama lain. Sebelum berpisah, dia pegang bahu Samad sekejap.",
+          "“Jaga-jaga,” dia kata. “Orang yang mereka bawa masuk untuk kerja ni bukan orang kampung kita. Ada muka baru dari luar, dan mereka tak macam pekerja balak biasa.”",
+          "Samad balik dengan fikiran bercelaru, separuh bersyukur ada sekutu, separuh risau tentang apa yang bakal menanti."
+        ].join("\n\n"),
+        choices: [
+          { label: "Teruskan", to: "n9" }
+        ]
+      },
+
+      n9: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362826672_56d4e293.png",
+        tag: "Malam berfikir",
+        text: [
+          "Malam itu, Samad duduk di tepi pelita, cuba susun semua yang dia tahu. Esok, dia kena buat keputusan tentang langkah seterusnya, dan setiap pilihan bawa risiko yang berbeza.",
+          "Dia boleh cuba dapatkan sokongan Tok Ketua Hassan, ketua kampung yang dihormati tapi juga rapat dengan keluarga Encik Razif sejak bertahun. Dia boleh kembali berbincang dengan Pak Rashid tentang bukti yang perlu dikumpul sebelum sesiapa boleh bertindak secara rasmi. Atau dia boleh nekad sendiri, kembali ke kem malam esok untuk cari bukti yang lebih kukuh sebelum semuanya terlambat.",
+          "Anak orang utan itu masih dalam fikirannya, mata ketakutan yang tak dapat dilupakan. Tapi tergesa-gesa tanpa rancangan yang betul boleh membahayakan bukan sahaja dirinya, tapi juga sesiapa yang dia libatkan."
+        ].join("\n\n"),
+        choices: [
+          { label: "Cari Tok Ketua Hassan", to: "n11", requires: function (s) { return s.kepercayaan >= 1; } },
+          { label: "Cari Pak Rashid, bincang bukti", to: "n12" },
+          { label: "Nekad sendiri, kembali ke kem malam esok", to: "n13" }
+        ]
+      },
+
+      n11: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362834382_8f12909e.png",
+        tag: "Tok Ketua",
+        text: [
+          "Tok Ketua Hassan dengar cerita Samad dengan muka serius, tangan disilang di dada. Rumahnya besar dan kemas, bukti kampung ni memang makmur sejak Perkasa Timber mula beroperasi sepuluh tahun lalu.",
+          "“Saya kenal keluarga Razif dah lama,” dia kata perlahan. “Ayah dia dulu tolong bina sekolah kampung ni. Saya tak nak percaya anak dia buat kerja macam ni.”",
+          "Tapi dia tak terus menolak cerita Samad. Dia diam seketika, jelas bergelut antara hutang budi lama dan tanggungjawabnya sebagai ketua kampung.",
+          "“Kalau betul apa yang awak cakap,” dia sambung, “kita kena buat betul-betul. Bukan sekadar tuduh tanpa bukti. Nanti seluruh kampung yang kena padahnya kalau silap langkah.”",
+          "Dia tawar dua jalan. Sama ada dia terus hubungi pegawai daerah secara rasmi walaupun bukti masih tipis, atau Samad rasa dia bertindak terlalu perlahan dan pilih jalan sendiri."
+        ].join("\n\n"),
+        choices: [
+          { label: "Minta dia hubungi pegawai terus", to: "n14", effect: function (s) { s.kepercayaan += 1; } },
+          { label: "Rasa dia terlalu lambat, pergi sendiri", to: "n13", effect: function (s) { s.kepercayaan -= 1; s.bahaya += 1; } }
+        ]
+      },
+
+      n12: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362843153_49263fa5.png",
+        tag: "Merancang",
+        text: [
+          "Pak Rashid dengar apa yang Samad dah kumpul setakat ni, mengangguk perlahan sambil menulis nota dalam buku kecilnya.",
+          "“Kalau kita nak PERHILITAN daerah bertindak segera, kita perlukan bukti yang jelas,” dia terangkan. “Gambar, video, atau sekurang-kurangnya keterangan yang boleh disahkan. Syak-syak semata tak cukup untuk dapatkan waran serbuan.”",
+          "Dia tunjuk peta kasar kawasan kem yang dia lukis dari ingatan, menandakan laluan masuk yang paling selamat dan waktu pengawal biasa bertukar syif.",
+          "“Kalau bukti awak dah cukup kukuh,” dia kata sambil renung Samad, “kita boleh hantar terus malam ni jugak. Tapi kalau belum, kita kena kembali sekali lagi, kali ni dengan kamera yang betul-betul dapat rakam apa yang berlaku.”"
+        ].join("\n\n"),
+        choices: [
+          { label: "Bukti dah cukup, hantar sekarang", to: "n15", requires: function (s) { return s.bukti >= 2; } },
+          { label: "Kembali ke kem untuk dapatkan video yang jelas", to: "n16" }
+        ]
+      },
+
+      n13: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362845659_2b108fd4.png",
+        tag: "Nekad sendiri",
+        text: [
+          "Samad nekad bergerak sendirian malam ini, tanpa tunggu sesiapa lagi. Bulan tertutup awan, dan laluan ke kem terasa lebih gelap dan lebih sunyi berbanding malam sebelumnya.",
+          "Sampai berhampiran pagar, dia dengar bunyi enjin lori dipanaskan, tanda-tanda sesuatu bakal bergerak tak lama lagi. Masanya semakin singkat.",
+          "Dia boleh cuba ambil gambar kandang dari jarak dekat untuk jadikan bukti yang tak dapat disangkal, walaupun risiko ditangkap amat tinggi. Atau dia boleh cuba tindakan yang lebih terus, cuba buka kandang dan lepaskan anak orang utan itu sendiri sebelum lori sempat bergerak, satu tindakan yang mungkin menyelamatkan seekor haiwan tapi hampir pasti mendedahkan dirinya sepenuhnya kepada bahaya."
+        ].join("\n\n"),
+        choices: [
+          { label: "Ambil gambar kandang dari dekat", to: "n17" },
+          { label: "Cuba lepaskan orang utan sendirian", to: "n18" }
+        ]
+      },
+
+      n14: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362844677_d8138ccf.png",
+        tag: "Panggilan kecemasan",
+        text: [
+          "Pak Rashid dan Tok Ketua Hassan bersama-sama menghubungi pejabat PERHILITAN daerah, suara mereka tegang di telefon menerangkan situasi yang mendesak. Di hujung talian, pegawai itu berjanji hantar pasukan secepat mungkin, tapi jarak dari pekan daerah ke Kampung Sungai Rasa bukan calang-calang dekat.",
+          "“Mereka kata dalam masa sejam,” Pak Rashid beritahu Samad, muka dia tegang di bawah cahaya lampu suluh. “Tapi kalau lori tu dah bergerak sebelum mereka sampai, kita mungkin terlepas peluang ni.”",
+          "Samad rasa jantungnya berdegup laju, separuh lega sebab akhirnya ada tindakan rasmi, separuh cemas sebab masa yang amat singkat untuk menunggu."
+        ].join("\n\n"),
+        effect: function (s) { s.bahaya += 1; },
+        choices: [
+          { label: "Teruskan", to: "n19" }
+        ]
+      },
+
+      n15: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362851940_80a15b27.png",
+        tag: "Bukti diserah",
+        text: [
+          "Samad serahkan semua bukti yang dah dikumpul kepada Pak Rashid malam itu jugak, gambar dan keterangan yang cukup jelas untuk menunjukkan apa yang sebenarnya berlaku di kem tu. Pak Rashid terus hubungi pegawai atasan di PERHILITAN, dan kali ni, respons yang diterima jauh lebih pantas berbanding laporan-laporan sebelum ini.",
+          "“Bukti macam ni yang kita perlukan sejak dulu lagi,” pegawai di hujung talian beritahu. “Kami akan gerakkan pasukan sekarang.”",
+          "Kelegaan bercampur ketegangan mengalir dalam diri Samad. Selepas berminggu-minggu risau sendirian, akhirnya ada seseorang yang benar-benar bertindak berdasarkan apa yang dia kumpulkan dengan susah payah."
+        ].join("\n\n"),
+        choices: [
+          { label: "Teruskan", to: "n19" }
+        ]
+      },
+
+      n16: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362853654_243443b4.png",
+        tag: "Merakam bukti",
+        text: [
+          "Samad dan Pak Rashid kembali ke kem malam berikutnya, kali ni dengan kamera kecil yang dipinjam dari pejabat PERHILITAN, jenis yang boleh rakam dalam gelap tanpa lampu kilat yang mendedahkan kedudukan.",
+          "Dari kedudukan yang lebih strategik berbanding sebelum ini, mereka berjaya rakam dengan jelas, sangkar besi, muka pekerja yang mengangkut kotak bertutup kain ke dalam lori, malah sekeping label penghantaran yang tercicir di tanah berdekatan pagar.",
+          "“Ini dah cukup kukuh,” Pak Rashid bisik, suara penuh kelegaan bercampur kebimbangan. “Tapi kita kena keluar dari sini sekarang sebelum ada yang perasan.”",
+          "Mereka berundur perlahan-lahan, tapi bunyi ranting patah di bawah kaki Pak Rashid buat seorang pengawal berpaling ke arah kegelapan tempat mereka bersembunyi. Nafas Samad tertahan sepenuhnya sehingga pengawal itu kembali membelakangkan mereka."
+        ].join("\n\n"),
+        effect: function (s) { s.bukti += 2; s.bahaya += 1; },
+        choices: [
+          { label: "Teruskan", to: "n19" }
+        ]
+      },
+
+      n17: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362864183_61f2eb20.png",
+        tag: "Hampir ketahuan",
+        text: [
+          "Samad merangkak sedekat mungkin ke pagar, telefon dalam genggaman disediakan untuk rakam apa sahaja yang boleh dijadikan bukti. Melalui celah papan, dia berjaya rakam beberapa saat video, sangkar besi, seekor lagi anak orang utan yang lebih kecil, dan suara lelaki yang menyebut destinasi penghantaran.",
+          "Tapi tangannya sedikit gementar, dan bunyi klik kamera telefon, walaupun perlahan, cukup untuk seekor anjing kem menyalak bingit ke arahnya.",
+          "“Ada orang!” satu suara menjerit dari dalam pagar.",
+          "Samad tak tunggu lagi, berpatah balik secepat yang boleh menerusi denai gelap, terlanggar akar dan dahan sepanjang jalan, sehingga akhirnya sampai ke tempat selamat dengan nafas tercungap-cungap dan bukti berharga tersimpan dalam telefon."
+        ].join("\n\n"),
+        effect: function (s) { s.bukti += 1; s.bahaya += 2; },
+        choices: [
+          { label: "Teruskan", to: "n19" }
+        ]
+      },
+
+      n18: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362853368_d4b1a57e.png",
+        tag: "Ditangkap basah",
+        text: [
+          "Samad buat keputusan nekad. Tanpa fikir panjang lagi, dia menyelinap ke arah bangunan kandang, cuba cari jalan untuk buka kunci yang mengikat pintu sangkar.",
+          "Tangannya baru sempat sentuh mangga besi bila lampu suluh terang membutakan matanya dari belakang.",
+          "“Jangan bergerak!”",
+          "Dua pengawal kem menangkap Samad di situ juga, tangan masih di atas mangga sangkar, tanpa ada apa-apa cara untuk menafikan apa yang dia cuba buat. Encik Damsuki muncul tak lama kemudian, wajahnya bercampur kemarahan dan kepuasan sebab akhirnya dapat tangkap “penyibuk” yang mengganggu operasi mereka sejak beberapa hari lepas.",
+          "Malam itu jadi malam paling panjang dalam hidup Samad, dan tiada siapa yang tahu di mana dia berada sehingga keesokan paginya."
+        ].join("\n\n"),
+        choices: [
+          { label: "Teruskan", to: "n24" }
+        ]
+      },
+
+      n19: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362864648_3878cb0b.png",
+        tag: "Detik genting",
+        text: [
+          "Bunyi enjin lori bergema kuat di seluruh kem, tanda konvoi bersedia bergerak menuju simpang jalan utama yang membawa ke pekan dan seterusnya ke pelabuhan. Detik ini akan menentukan segalanya, sama ada usaha Samad selama ini cukup, atau tidak."
+        ].join("\n\n"),
+        auto: function (s) {
+          if (s.bahaya >= 4) return "n24";
+          if (s.bukti >= 3 && s.kepercayaan >= 2 && s.bahaya <= 2) return "n20";
+          if (s.bukti >= 3 && s.bahaya >= 3) return "n21";
+          if (s.bukti < 2 && s.bahaya >= 3) return "n23";
+          return "n22";
+        }
+      },
+
+      n20: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362869025_772564f9.png",
+        ending: "menang",
+        text: [
+          "Sejurus konvoi bergerak melepasi simpang, kereta pacuan empat roda PERHILITAN memotong laluan lori utama, lampu isyarat biru berkelip dalam gelap malam. Pegawai bersenjata turun serentak, dan kali ini, bukti yang Samad kumpulkan dengan begitu teliti membuatkan setiap soalan mereka terjawab tanpa ragu.",
+          "Encik Razif ditahan di pejabatnya sendiri esok pagi, dan Encik Damsuki tak dapat berkata apa-apa bila video serta gambar yang dirakam Samad dipaparkan di hadapannya. Tiga anak orang utan diselamatkan dari kandang sempit malam itu, dihantar ke pusat pemulihan hidupan liar untuk dijaga sebelum dilepaskan semula ke habitat asal.",
+          "Kampung Sungai Rasa berbual pasal kejadian ni berminggu-minggu, dan kali ini, cerita tentang Samad bukan cerita seorang penyibuk, tapi seorang yang berani bertindak demi sesuatu yang benar. Pak Rashid tepuk bahunya kuat-kuat, senyuman lega jelas di wajahnya buat pertama kali sejak berminggu-minggu.",
+          "Di kejauhan, Samad dengar bunyi hutan kembali sunyi, tenang macam sepatutnya."
+        ].join("\n\n")
+      },
+
+      n21: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362871320_f7c936f2.png",
+        ending: "pahit",
+        text: [
+          "Serbuan berjaya, dan tiga anak orang utan diselamatkan dari kem malam itu. Tapi harga yang Samad bayar tidak murah. Salah seorang pengawal kem sempat menyerangnya semasa kekecohan, dan tangannya patah akibat cuba melindungi diri sebelum pegawai PERHILITAN sempat bertindak.",
+          "Encik Razif ditahan, tapi khabar angin di kampung berpecah dua, ada yang anggap Samad wira, ada pula yang salahkan dia sebab ramai pekerja kampung sendiri kehilangan pekerjaan bila operasi Perkasa Timber ditutup buat sementara waktu.",
+          "Farid tak lagi memandu lori, tapi dia juga tak lagi bercakap dengan Samad macam dulu, mungkin sebab rasa bersalah, mungkin sebab kehilangan sumber pendapatan yang selama ni menyara keluarganya.",
+          "Samad duduk di klinik daerah dengan tangan berbalut, dengar berita di radio tentang tangkapan besar sindiket penyeludupan hidupan liar di Sabah. Dia selamatkan nyawa tiga ekor orang utan malam itu. Tapi kampung yang dia kenal sejak kecil tak akan sama lagi, dan dia sendiri pun tak pasti sama ada ia berbaloi."
+        ].join("\n\n")
+      },
+
+      n22: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362874766_74ec5247.png",
+        ending: "separuh",
+        text: [
+          "Konvoi lori sempat dipintas, tapi kelewatan beberapa minit menyebabkan satu daripada dua lori berjaya melarikan diri menerusi jalan pintas yang tak disangka pihak berkuasa. Hanya satu sangkar berjaya diselamatkan, seekor anak orang utan yang letih dan ketakutan, sementara yang lain sudah pun dalam perjalanan entah ke mana.",
+          "Encik Damsuki ditahan untuk siasatan, tapi Encik Razif menghilang sebelum sempat pegawai sampai ke rumahnya, khabarnya dah melarikan diri ke luar negeri melalui laluan yang sama dengan penyeludupan-penyeludupan sebelum ini.",
+          "Di kampung, cerita tentang penglibatan Samad tersebar cepat, dan tak semua orang percaya versi sebenar. Ada yang bisik-bisik dia cuma nak cari nama, ada pula yang anggap dia patut serahkan semuanya kepada pihak berkuasa dari awal tanpa bertindak sendiri.",
+          "Samad pandang anak orang utan yang berjaya diselamatkan itu dibawa naik kenderaan pemulihan hidupan liar, sedikit kelegaan bercampur kekecewaan yang berat. Satu nyawa selamat. Tapi dalang sebenar masih bebas di luar sana, dan itu satu kebenaran yang sukar ditelan."
+        ].join("\n\n")
+      },
+
+      n23: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362879379_d1eb02d2.png",
+        ending: "dikhianati",
+        bad: true,
+        text: [
+          "Konvoi lori sepatutnya dipintas, tapi bila pegawai PERHILITAN sampai ke simpang jalan, semuanya sudah pun sunyi sepi, tiada lori, tiada kesan, seolah-olah seluruh operasi tu tak pernah wujud.",
+          "“Bukti yang kita ada terlalu tipis,” pegawai itu terangkan dengan nada kesal, “dan nampaknya seseorang dah beri amaran awal kepada mereka.”",
+          "Samad rasa perutnya memulas. Seseorang yang dia percayai pastinya bocorkan rancangan ini, sama ada sengaja atau tidak, cukup awal untuk Encik Razif pindahkan semua bukti dan haiwan ke lokasi lain sebelum sesiapa sempat bertindak.",
+          "Kembali ke kampung, Samad dapati dirinya pula yang disyaki, dituduh mengada-ada cerita tanpa bukti kukuh, malah ada yang mempersoalkan kenapa dia begitu bersemangat menyiasat hal yang “bukan urusan dia”. Tok Ketua Hassan tak lagi seramah dulu bila berselisih dengannya di kedai kopi.",
+          "Anak orang utan yang pernah dilihat Samad ketakutan dalam kandang itu masih di luar sana, entah di mana, dan dia tak tahu sama ada akan berpeluang lagi untuk cuba selamatkan haiwan itu."
+        ].join("\n\n")
+      },
+
+      n24: {
+        img: "https://cdn.openart.ai/openart-ai/production/2026-09/create-image/gamqt03iKzbQ4obR14Dn/gpt-image-2-1_1789362927753_0fde1186.png",
+        ending: "gagal",
+        bad: true,
+        text: [
+          "Tangan Samad diikat dengan tali plastik dan dia dibawa masuk ke sebuah bilik simpanan kosong dalam kem, lampu neon menyilaukan matanya yang dah penat sejak semalaman berjaga.",
+          "Encik Razif sendiri muncul menjelang subuh, berdiri di ambang pintu dengan tangan bersilang, memerhati Samad macam memerhati seekor haiwan yang tersepit dalam perangkap sendiri.",
+          "“Awak patut jaga tepi kain awak,” dia kata perlahan, nada suara tenang yang lebih menakutkan berbanding jeritan. “Kampung ni hidup sebab syarikat saya. Awak baru sahaja rosakkan periuk nasi semua orang sebab nak main wira.”",
+          "Samad dilepaskan dua hari kemudian tanpa sebarang tindakan rasmi diambil terhadap sesiapa, diugut senyap supaya tak bercerita apa-apa lagi kepada sesiapa. Lori-lori Perkasa Timber terus keluar masuk kem macam biasa minggu berikutnya, dan tiada siapa di kampung berani sebut lagi pasal anak-anak orang utan yang pernah cuba diselamatkannya.",
+          "Dia duduk sendirian di beranda rumah, dengar bunyi lori lalu sekali lagi di kejauhan, dan kali ini, dia tahu dia takkan bergerak walau sejengkal pun."
+        ].join("\n\n")
+      }
+
+    }
+  };
+
+  var endingLabels = {
+    menang: "Tamat — Menang Penuh",
+    pahit: "Tamat — Menang Pahit",
+    separuh: "Tamat — Separuh Berjaya",
+    dikhianati: "Tamat — Dikhianati",
+    gagal: "Tamat — Gagal"
+  };
+
+  // ---------------------------------------------------------------
+  // ENGINE
+  // ---------------------------------------------------------------
+  var state = { kepercayaan: 0, bukti: 0, bahaya: 0 };
+  var currentId = story.start;
+
+  var bookEl = document.getElementById("book");
+  var plateEl = document.getElementById("plate");
+  var plateImgEl = document.getElementById("plateImg");
+  var textEl = document.getElementById("storyText");
+  var choicesEl = document.getElementById("choices");
+
+  function resetState() {
+    state = { kepercayaan: 0, bukti: 0, bahaya: 0 };
+    currentId = story.start;
+  }
+
+  function paragraphsHtml(text) {
+    return text.split("\n\n").map(function (p) {
+      var safe = p.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return "<p>" + safe + "</p>";
+    }).join("");
+  }
+
+  function render() {
+    var node = story.nodes[currentId];
+    if (!node) { return; }
+
+    if (typeof node.effect === "function") {
+      node.effect(state);
+    }
+
+    bookEl.classList.remove("show");
+
+    window.setTimeout(function () {
+      plateEl.classList.remove("broken");
+      plateImgEl.onerror = function () { plateEl.classList.add("broken"); };
+      plateImgEl.src = node.img || "";
+      plateImgEl.alt = node.tag || (node.ending ? endingLabels[node.ending] : "Ilustrasi babak");
+
+      var html = "";
+      if (node.ending) {
+        var labelClass = node.bad ? "ending-label bad" : "ending-label";
+        html += '<span class="' + labelClass + '">' + endingLabels[node.ending] + "</span>";
+      } else if (node.tag) {
+        html += '<span class="scene-tag">' + node.tag + "</span>";
+      }
+      html += paragraphsHtml(node.text);
+      textEl.innerHTML = html;
+
+      choicesEl.innerHTML = "";
+
+      if (node.ending) {
+        var restartBtn = document.createElement("button");
+        restartBtn.className = "restart";
+        restartBtn.type = "button";
+        restartBtn.textContent = "Mula semula";
+        restartBtn.addEventListener("click", function () {
+          resetState();
+          render();
+        });
+        choicesEl.appendChild(restartBtn);
+      } else if (typeof node.auto === "function") {
+        var nextId = node.auto(state);
+        var contBtn = document.createElement("button");
+        contBtn.className = "choice";
+        contBtn.type = "button";
+        contBtn.textContent = "Teruskan…";
+        contBtn.addEventListener("click", function () {
+          currentId = nextId;
+          render();
+        });
+        choicesEl.appendChild(contBtn);
+      } else if (node.choices) {
+        node.choices.forEach(function (choice) {
+          if (typeof choice.requires === "function" && !choice.requires(state)) {
+            return;
+          }
+          var btn = document.createElement("button");
+          btn.className = "choice";
+          btn.type = "button";
+          btn.textContent = choice.label;
+          btn.addEventListener("click", function () {
+            if (typeof choice.effect === "function") {
+              choice.effect(state);
+            }
+            currentId = typeof choice.to === "function" ? choice.to(state) : choice.to;
+            render();
+          });
+          choicesEl.appendChild(btn);
+        });
+      }
+
+      requestAnimationFrame(function () {
+        bookEl.classList.add("show");
+      });
+    }, 120);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
