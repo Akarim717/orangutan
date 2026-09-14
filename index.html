@@ -36,7 +36,7 @@
   }
   .wrap {
     width: 100%;
-    max-width: 660px;
+    max-width: 880px;
   }
   header.top {
     text-align: center;
@@ -64,11 +64,14 @@
       0 1px 0 #fff inset,
       0 18px 40px rgba(60, 45, 20, 0.28),
       0 2px 0 var(--page-edge);
-    padding: 0 0 30px;
+    padding: 0;
     opacity: 0;
     transform: translateY(8px);
     transition: opacity 260ms ease, transform 260ms ease;
     overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
   }
   .book.show {
     opacity: 1;
@@ -76,11 +79,13 @@
   }
   .plate {
     position: relative;
-    width: 100%;
-    aspect-ratio: 4 / 3;
+    flex: 0 0 40%;
+    width: 40%;
+    aspect-ratio: 3 / 4;
     background: #cfc4a3;
     overflow: hidden;
-    border-bottom: 1px solid var(--page-edge);
+    border-bottom: none;
+    border-right: 1px solid var(--page-edge);
   }
   .plate img {
     width: 100%;
@@ -111,7 +116,11 @@
   .plate.broken .plate-missing { display: flex; }
   .plate.broken img { display: none; }
   .page-body {
-    padding: 28px 32px 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 28px 32px 30px;
+    display: flex;
+    flex-direction: column;
   }
   .scene-tag {
     display: block;
@@ -143,7 +152,6 @@
   .story-text {
     font-size: 1.12rem;
     max-width: 62ch;
-    margin: 0 auto;
   }
   .story-text p {
     margin: 0 0 1.1em;
@@ -162,12 +170,11 @@
     margin-bottom: 0;
   }
   .choices {
-    margin: 28px auto 0;
+    margin: 28px 0 0;
     max-width: 62ch;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 0 32px;
   }
   button.choice {
     font-family: inherit;
@@ -220,9 +227,19 @@
     margin-top: 20px;
     padding: 0 16px;
   }
+  @media (max-width: 720px) {
+    .book { flex-direction: column; }
+    .plate {
+      width: 100%;
+      flex-basis: auto;
+      aspect-ratio: 4 / 3;
+      border-right: none;
+      border-bottom: 1px solid var(--page-edge);
+    }
+    .story-text, .choices { max-width: none; }
+  }
   @media (max-width: 480px) {
-    .page-body { padding: 22px 20px 4px; }
-    .choices { padding: 0 20px; }
+    .page-body { padding: 22px 20px 26px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .book { transition: none; }
