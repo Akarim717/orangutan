@@ -21,22 +21,23 @@
     margin: 0;
     padding: 0;
     background: #ded2ae;
+    height: 100%;
   }
   body {
     font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
     color: var(--ink);
     line-height: 1.7;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 28px 14px 56px;
+    height: 100vh;
+    overflow: hidden;
     background-image:
       radial-gradient(ellipse at top, rgba(255,255,255,0.25), transparent 60%),
       linear-gradient(#ded2ae, #d5c79c);
   }
   .wrap {
     width: 100%;
-    max-width: 880px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
   .cover {
     position: fixed;
@@ -172,52 +173,48 @@
     .cover-byline { left: 24px; bottom: 18px; }
   }
   header.top {
+    flex: 0 0 auto;
     text-align: center;
-    margin-bottom: 22px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--page-edge);
+    background: var(--page);
   }
   header.top h1 {
-    font-size: 1.9rem;
+    font-size: 1.3rem;
     font-weight: 400;
     letter-spacing: 0.04em;
     color: var(--accent-deep);
-    margin: 0 0 6px;
+    margin: 0 0 2px;
     font-variant: small-caps;
   }
   header.top p {
     margin: 0;
     color: var(--ink-soft);
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-style: italic;
   }
   .book {
     background: var(--page);
-    border: 1px solid var(--page-edge);
-    border-radius: 4px;
-    box-shadow:
-      0 1px 0 #fff inset,
-      0 18px 40px rgba(60, 45, 20, 0.28),
-      0 2px 0 var(--page-edge);
     padding: 0;
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 260ms ease, transform 260ms ease;
+    transition: opacity 260ms ease;
     overflow: hidden;
     display: flex;
     flex-direction: row;
     align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
   }
   .book.show {
     opacity: 1;
-    transform: translateY(0);
   }
   .plate {
     position: relative;
-    flex: 0 0 40%;
-    width: 40%;
-    aspect-ratio: 3 / 4;
+    flex: 0 0 42%;
+    width: 42%;
+    height: 100%;
     background: #cfc4a3;
     overflow: hidden;
-    border-bottom: none;
     border-right: 1px solid var(--page-edge);
   }
   .plate img {
@@ -251,9 +248,16 @@
   .page-body {
     flex: 1 1 auto;
     min-width: 0;
-    padding: 28px 32px 30px;
+    min-height: 0;
+    padding: 36px 44px 20px;
     display: flex;
     flex-direction: column;
+  }
+  .story-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 8px;
   }
   .scene-tag {
     display: block;
@@ -352,27 +356,32 @@
   button.restart:hover {
     background: #3d2a19;
   }
-  footer.note {
-    text-align: center;
+  .inline-note {
+    flex: 0 0 auto;
+    text-align: left;
     color: var(--ink-soft);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-style: italic;
-    margin-top: 20px;
-    padding: 0 16px;
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--page-edge);
   }
   @media (max-width: 720px) {
     .book { flex-direction: column; }
     .plate {
       width: 100%;
-      flex-basis: auto;
-      aspect-ratio: 4 / 3;
+      flex: 0 0 34vh;
+      height: 34vh;
       border-right: none;
       border-bottom: 1px solid var(--page-edge);
     }
+    .page-body { flex: 1 1 auto; min-height: 0; padding: 22px 22px 16px; }
     .story-text, .choices { max-width: none; }
   }
   @media (max-width: 480px) {
-    .page-body { padding: 22px 20px 26px; }
+    .page-body { padding: 18px 18px 14px; }
+    header.top { padding: 10px 14px; }
+    header.top h1 { font-size: 1.1rem; }
   }
   @media (prefers-reduced-motion: reduce) {
     .book { transition: none; }
@@ -405,11 +414,13 @@
       <div class="plate-missing">Ilustrasi tidak dapat dimuatkan.<br>Sila semak sambungan internet anda.</div>
     </div>
     <div class="page-body">
-      <div class="story-text" id="storyText"></div>
+      <div class="story-scroll">
+        <div class="story-text" id="storyText"></div>
+      </div>
       <div class="choices" id="choices"></div>
+      <p class="inline-note" id="bottomNote" hidden>Cerita ini fiksyen. Watak dan syarikat yang disebut adalah rekaan semata-mata. Ilustrasi dijana oleh AI melalui OpenArt dan dimuatkan terus dari pelayan OpenArt &mdash; sambungan internet diperlukan untuk memaparkannya.</p>
     </div>
   </div>
-  <footer class="note" id="bottomNote" hidden>Cerita ini fiksyen. Watak dan syarikat yang disebut adalah rekaan semata-mata. Ilustrasi dijana oleh AI melalui OpenArt dan dimuatkan terus dari pelayan OpenArt &mdash; sambungan internet diperlukan untuk memaparkannya.</footer>
 </div>
 
 <script>
