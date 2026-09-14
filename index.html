@@ -39,24 +39,15 @@
     max-width: 880px;
   }
   .cover {
-    margin-bottom: 22px;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #0c0a06;
     opacity: 1;
-    transition: opacity 320ms ease;
+    transition: opacity 380ms ease;
   }
   .cover.leaving {
     opacity: 0;
-  }
-  .cover-frame {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    border-radius: 4px;
-    overflow: hidden;
-    background: #cfc4a3;
-    box-shadow:
-      0 1px 0 #fff inset,
-      0 18px 40px rgba(60, 45, 20, 0.32),
-      0 2px 0 var(--page-edge);
   }
   .cover-img {
     position: absolute;
@@ -72,71 +63,113 @@
     inset: 0;
     align-items: center;
     justify-content: center;
-    color: var(--ink-soft);
+    color: #cbbd97;
     font-style: italic;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     text-align: center;
     padding: 20px;
-    background: repeating-linear-gradient(45deg, #cfc4a3, #cfc4a3 10px, #c6ba97 10px, #c6ba97 20px);
+    background: repeating-linear-gradient(45deg, #26200f, #26200f 10px, #2e2712 10px, #2e2712 20px);
   }
   .cover.broken .cover-missing { display: flex; }
   .cover.broken .cover-img { display: none; }
   .cover-veil {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(20, 14, 6, 0.82) 0%, rgba(20, 14, 6, 0.35) 42%, rgba(20, 14, 6, 0.05) 68%);
+    background:
+      linear-gradient(105deg, rgba(8,6,3,0.94) 0%, rgba(8,6,3,0.78) 30%, rgba(8,6,3,0.32) 58%, rgba(8,6,3,0.06) 82%),
+      linear-gradient(to top, rgba(8,6,3,0.55) 0%, rgba(8,6,3,0) 30%);
   }
-  .cover-content {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 40px 32px 36px;
-    text-align: center;
+  .cover-inner {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 760px;
+    padding: 40px 6vw;
   }
-  .cover-content h1 {
-    margin: 0 0 8px;
+  .cover-kicker {
+    margin: 0 0 14px;
+    color: var(--rule);
+    font-family: Georgia, serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .cover-title {
+    margin: 0 0 22px;
     font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
-    font-size: 2.3rem;
     font-weight: 400;
-    letter-spacing: 0.04em;
-    color: #f3ead6;
-    font-variant: small-caps;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    line-height: 1.02;
+    color: #f6efdc;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.55);
   }
-  .cover-content p {
-    margin: 0 0 26px;
-    color: #e7dcc1;
-    font-size: 0.95rem;
+  .cover-title em {
+    display: block;
     font-style: italic;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    color: #e0b45a;
+  }
+  .cover-tagline {
+    margin: 0 0 34px;
+    padding-left: 18px;
+    border-left: 3px solid var(--rule);
+    color: #ece2c8;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    max-width: 46ch;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  }
+  .cover-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
   }
   button.cover-start {
-    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
-    font-size: 1.05rem;
-    letter-spacing: 0.08em;
-    font-variant: small-caps;
-    background: var(--accent-deep);
-    color: var(--page);
-    border: 1px solid rgba(255,255,255,0.25);
+    font-family: Georgia, serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: #e0b45a;
+    color: #241a0c;
+    border: none;
     border-radius: 3px;
-    padding: 14px 40px;
+    padding: 16px 32px;
     min-height: 48px;
     cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.4);
     transition: background 150ms ease, transform 150ms ease;
   }
   button.cover-start:hover, button.cover-start:focus-visible {
-    background: #6a4a2c;
+    background: #eec378;
     transform: translateY(-1px);
     outline: none;
   }
   button.cover-start:active {
     transform: translateY(0);
   }
-  @media (max-width: 720px) {
-    .cover-frame { aspect-ratio: 3 / 4; }
-    .cover-content h1 { font-size: 1.7rem; }
+  .cover-byline {
+    position: absolute;
+    left: 6vw;
+    bottom: 26px;
+    color: #a89a78;
+    font-family: Georgia, serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  }
+  @media (max-width: 640px) {
+    .cover-inner { padding: 32px 24px; max-width: 100%; }
+    .cover-tagline { font-size: 0.98rem; }
+    button.cover-start { padding: 14px 26px; font-size: 0.8rem; }
+    .cover-byline { left: 24px; bottom: 18px; }
   }
   header.top {
     text-align: center;
@@ -347,19 +380,21 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="cover" id="cover">
-    <div class="cover-frame">
-      <img class="cover-img" id="coverImg" alt="" loading="eager" referrerpolicy="no-referrer">
-      <div class="cover-missing">Ilustrasi kulit tidak dapat dimuatkan.<br>Sila semak sambungan internet anda.</div>
-      <div class="cover-veil"></div>
-      <div class="cover-content">
-        <h1>Jejak Orang Utan</h1>
-        <p>Sebuah kisah bercabang</p>
-        <button type="button" class="cover-start" id="coverStart">Mulakan</button>
-      </div>
+<div class="cover" id="cover">
+  <img class="cover-img" id="coverImg" alt="" loading="eager" referrerpolicy="no-referrer">
+  <div class="cover-missing">Ilustrasi kulit tidak dapat dimuatkan.<br>Sila semak sambungan internet anda.</div>
+  <div class="cover-veil"></div>
+  <div class="cover-inner">
+    <p class="cover-kicker">Sebuah kisah bercabang dari Sabah</p>
+    <h1 class="cover-title">Jejak<em>Orang Utan</em></h1>
+    <p class="cover-tagline">Sesetengah rahsia patut dikuburkan dalam-dalam.<br>Yang lain menanti untuk ditemui.</p>
+    <div class="cover-actions">
+      <button type="button" class="cover-start" id="coverStart">Mulakan <span aria-hidden="true">&rarr;</span></button>
     </div>
   </div>
+  <div class="cover-byline">Abd Karim Alias &middot; 2026 &middot; CC BY</div>
+</div>
+<div class="wrap">
   <header class="top" id="topHeader" hidden>
     <h1>Jejak Orang Utan</h1>
     <p>Sebuah kisah bercabang</p>
